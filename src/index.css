@@ -1,0 +1,23 @@
+/* src/index.css */
+@import 'tailwindcss';
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html,body {
+  margin: 0;
+  padding: 0;
+  min-height: 100%;
+  scrollbar-width: none;
+}
+body{
+   background-color: black; /* optional dark fallback */
+}
+
+/* index.css */
+@font-face {
+  font-family: 'title';
+  src: url('./assets/Montserrat-VariableFont_wght.ttf') format('truetype');
+  font-weight: 100 900;
+  font-display: swap;
+}
