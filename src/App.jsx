@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import Card from './components/card.jsx'
 import NowBar from './components/nowbar.jsx'
 import SearchBar from './components/searchbar.jsx'
@@ -6,31 +6,25 @@ import background from './assets/background.jpg'
 import Footer from './components/Footer.jsx'
 import PageNav from './components/pageNav.jsx'
 import Local from './pages/local.jsx'
+import axios from 'axios'
 
 
-const App = () => {
-  const songs = [
-    { name: "Blinding Lights", album: "After Hours", cover: "https://upload.wikimedia.org/wikipedia/en/e/e6/The_Weeknd_-_Blinding_Lights.png" },
-    { name: "Starboy", album: "Starboy", cover: "https://upload.wikimedia.org/wikipedia/en/3/39/The_Weeknd_-_Starboy.png" },
-    { name: "Shape of You", album: "Divide", cover: "https://upload.wikimedia.org/wikipedia/en/4/45/Divide_cover.png" },
-    { name: "Levitating", album: "Future Nostalgia", cover: "https://upload.wikimedia.org/wikipedia/en/f/f5/Dua_Lipa_-_Future_Nostalgia_%28Official_Album_Cover%29.png" },
-    { name: "Peaches", album: "Justice", cover: "https://upload.wikimedia.org/wikipedia/en/0/08/Justin_Bieber_-_Justice.png" },
-    { name: "As It Was", album: "Harry's House", cover: "https://upload.wikimedia.org/wikipedia/en/f/ff/Harry_Styles_-_As_It_Was.png" },
-    { name: "Believer", album: "Evolve", cover: "https://upload.wikimedia.org/wikipedia/en/5/5c/Imagine-Dragons-Believer-art.jpg" },
-    { name: "Happier Than Ever", album: "Happier Than Ever", cover: "https://upload.wikimedia.org/wikipedia/en/9/9a/Billie_Eilish_-_Happier_Than_Ever_%28song%29.png" },
-    { name: "Stay", album: "Stay", cover: "https://upload.wikimedia.org/wikipedia/en/0/0c/The_Kid_Laroi_and_Justin_Bieber_-_Stay.png" },
-    { name: "Senorita", album: "Romance", cover: "https://upload.wikimedia.org/wikipedia/commons/8/8d/Shawn_Mendes_and_Camila_Cabello_-_Se%C3%B1orita.png" },
-    { name: "Blinding Lights", album: "After Hours", cover: "https://upload.wikimedia.org/wikipedia/en/e/e6/The_Weeknd_-_Blinding_Lights.png" },
-    { name: "Starboy", album: "Starboy", cover: "https://upload.wikimedia.org/wikipedia/en/3/39/The_Weeknd_-_Starboy.png" },
-    { name: "Shape of You", album: "Divide", cover: "https://upload.wikimedia.org/wikipedia/en/4/45/Divide_cover.png" },
-    { name: "Levitating", album: "Future Nostalgia", cover: "https://upload.wikimedia.org/wikipedia/en/f/f5/Dua_Lipa_-_Future_Nostalgia_%28Official_Album_Cover%29.png" },
-    { name: "Peaches", album: "Justice", cover: "https://upload.wikimedia.org/wikipedia/en/0/08/Justin_Bieber_-_Justice.png" },
-    { name: "As It Was", album: "Harry's House", cover: "https://upload.wikimedia.org/wikipedia/en/f/ff/Harry_Styles_-_As_It_Was.png" },
-    { name: "Believer", album: "Evolve", cover: "https://upload.wikimedia.org/wikipedia/en/5/5c/Imagine-Dragons-Believer-art.jpg" },
-    { name: "Happier Than Ever", album: "Happier Than Ever", cover: "https://upload.wikimedia.org/wikipedia/en/9/9a/Billie_Eilish_-_Happier_Than_Ever_%28song%29.png" },
-    { name: "Stay", album: "Stay", cover: "https://upload.wikimedia.org/wikipedia/en/0/0c/The_Kid_Laroi_and_Justin_Bieber_-_Stay.png" },
-    { name: "Senorita", album: "Romance", cover: "https://upload.wikimedia.org/wikipedia/commons/8/8d/Shawn_Mendes_and_Camila_Cabello_-_Se%C3%B1orita.png" }
-  ];
+const App = ({ onSearch }) => {
+  
+  const [songs, setSongs] = useState([]);
+  const [query, setQuery] = useState("")
+
+  const getSong = async (query)=>{
+    if(!query?.trim()) return;
+    const response = await axios.get(`https://saavn.sumit.co/api/search/songs?query=${encodeURIComponent(query)}`);
+    const data = response.data;
+    setSongs(data.data.results);
+  }
+  
+  useEffect(() => {
+    getSong();
+  }, [])
+  
 
   return (
     <div className="relative min-h-screen w-full flex flex-col justify-between text-white overflow-y-hidden">
@@ -44,7 +38,7 @@ const App = () => {
 
       {/* 2. Top Search Header */}
       <header className="fixed top-10 w-full pt-6 pb-2 z-20">
-        <SearchBar />
+        <SearchBar onSearch={getSong}/>
         <nav className="w-full flex justify-center py-6">
         <PageNav />
         </nav>
@@ -71,12 +65,12 @@ const App = () => {
           mt-27
         "
       >
-        {songs.map((elem, idx) => (
+        {songs.map((elem) => (
           <Card
-            key={idx}
+            key={elem.id}
             name={elem.name}
-            album={elem.album}
-            poster={elem.cover}
+            album={elem.album.name}
+            poster={elem.image[2].url}
           />
         ))}
       </main>

@@ -1,11 +1,20 @@
-import React, { use, useState } from 'react'
+import React, { use, useEffect, useState } from 'react'
 import Card from '../components/card'
 import { FiUpload, FiMusic } from "react-icons/fi";
 import SongForm from '../components/songForm';
+import SearchBar from '../components/searchbar';
 
 const local = () => {
     const [isVisible, setisVisible] = useState(false)
-    const [songs, setSongs] = useState([])
+    const [songs, setSongs] = useState(() => {
+        const savedSongs = localStorage.getItem("songs");
+        return savedSongs ? JSON.parse(savedSongs) : [];
+    });
+
+
+    useEffect(() => {
+        localStorage.setItem("songs", JSON.stringify(songs));
+    }, [songs]);
 
     const HandleAddSongs = (song) => {
         console.log(song, "recieved")
@@ -18,7 +27,7 @@ const local = () => {
 
 
     return (
-        
+
         <>
             <div
                 onClick={() => {
@@ -106,18 +115,18 @@ const local = () => {
 
 
             </div>
-            {isVisible && <div className="absolute z-10">
+            {isVisible && <div className="absolute z-60">
                 <SongForm onAddSong={HandleAddSongs} />
             </div>
             }
-            
+
             {songs.map((elem, idx) => (
-                    <Card
-                        key={idx}
-                        name={elem.title}
-                        album={elem.album}
-                        poster={elem.cover}
-                    />
+                <Card
+                    key={idx}
+                    name={elem.title}
+                    album={elem.album}
+                    poster={elem.cover}
+                />
             ))}
         </>
     )
