@@ -1,10 +1,10 @@
-import React, { use, useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import Card from '../components/card'
 import { FiUpload, FiMusic } from "react-icons/fi";
 import SongForm from '../components/songForm';
-import SearchBar from '../components/searchbar';
 
-const local = () => {
+
+const Local = () => {
     const [isVisible, setisVisible] = useState(false)
     const [songs, setSongs] = useState(() => {
         const savedSongs = localStorage.getItem("songs");
@@ -28,7 +28,25 @@ const local = () => {
 
     return (
 
-        <>
+        <div
+          className="
+        flex-1
+        w-full
+        max-w-7xl
+        mx-auto
+        flex
+        flex-wrap
+        justify-center
+        items-center
+        gap-4
+        sm:gap-8
+        md:gap-10
+        px-3
+        sm:px-6
+        py-8
+        sm:py-12
+        mt-27
+    ">
             <div
                 onClick={() => {
                     setisVisible(true)
@@ -128,8 +146,8 @@ const local = () => {
                     poster={elem.cover}
                 />
             ))}
-        </>
+        </div>
     )
 }
 
-export default local
+export default Local

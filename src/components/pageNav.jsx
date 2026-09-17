@@ -1,47 +1,46 @@
-import React from 'react'
+import React from "react";
+import { NavLink } from "react-router-dom";
 
-const pageNav = () => {
-  return (
-      
-      <div
-        className="
-          flex items-center gap-1
-          p-1
-          rounded-full
-          bg-[#4b4949]/[0.427]
-          backdrop-blur-[15px]
-          border border-white/10
-        "
-      >
-
+const PageNav = () => {
+    return (
         <div
-        //   to="/"
-          className="
-            px-5 py-2
-            rounded-full
-            text-white
-            hover:bg-white/10
-            transition
-          "
+            className="
+                flex items-center gap-1
+                p-1
+                rounded-full
+                bg-[#4b4949]/[0.427]
+                backdrop-blur-[15px]
+                border border-white/10
+            "
         >
-          Home
+            <NavLink
+                to="/"
+                end
+                className={({ isActive }) =>
+                    `px-5 py-2 rounded-full transition-all duration-200 ${
+                        isActive
+                            ? "bg-white/15 text-white"
+                            : "text-white/60 hover:text-white hover:bg-white/10"
+                    }`
+                }
+            >
+                Home
+            </NavLink>
+
+            <NavLink
+                to="/local"
+                className={({ isActive }) =>
+                    `px-5 py-2 rounded-full transition-all duration-200 ${
+                        isActive
+                            ? "bg-white/15 text-white"
+                            : "text-white/60 hover:text-white hover:bg-white/10"
+                    }`
+                }
+            >
+                Local
+            </NavLink>
         </div>
+    );
+};
 
-        <div
-        //   to="/local"
-          className="
-            px-5 py-2
-            rounded-full
-            text-white
-            hover:bg-white/10
-            transition
-          "
-        >
-          Local
-        </div>
-
-      </div>
-  )
-}
-
-export default pageNav
+export default PageNav;
