@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
-import Card from '../components/card'
+import Card from '../components/card/card';
 import { FiUpload, FiMusic } from "react-icons/fi";
-import SongForm from '../components/songForm';
+import SongForm from '../components/Others/songForm';
 
 
 const Local = () => {

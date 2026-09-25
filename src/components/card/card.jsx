@@ -1,12 +1,10 @@
 import React, { useState, useEffect } from 'react'
 import defaultPoster from '/src/assets/DhurandharPoster.jpg'
 
-const Card = ({ poster, name, album }) => {
+const Card = ({ poster, name, album, onSongClick }) => {
   const [horizontal, setHorizontal] = useState(0)
   const [vertical, setVertical] = useState(0)
   const [isHovered, setIsHovered] = useState(false)
-
-
   const MAX_TILT = 15
 
 
@@ -38,7 +36,7 @@ const Card = ({ poster, name, album }) => {
 
   return (
     <div
-      onClick={() => console.log('click')}
+      onClick={onSongClick}
       onMouseMove={calculateHover}
       onMouseLeave={resetHover}
       style={{

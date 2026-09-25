@@ -1,20 +1,20 @@
 import React, { useEffect, useState } from 'react'
 import axios from 'axios';
-import Card from '../components/card';
+import Card from '../components/card/card';
 
-const Home = ({ query }) => {
+const Home = ({ }) => {
     const [songs, setSongs] = useState([]);
     
-    const getSong = async (query) => {
-        if (!query?.trim()) return;
-        const response = await axios.get(`https://api.audius.co/v1/search/full?query=${encodeURIComponent(query)}`);
-        const data = response.data;
-        setSongs(data.data.tracks);
-    }
+    // const searchSong = async (query) => {
+    //     if (!query?.trim()) return;
+    //     const response = await axios.get(`https://saavn.sumit.co/api/search/songs?query=${encodeURIComponent(query)}`);
+    //     const data = response.data;
+    //     setSongs(data.data.results);
+    // }
 
-    useEffect(() => {
-        getSong(query);
-    }, [query])
+    // useEffect(() => {
+    //     searchSong(query);
+    // }, [query])
     return (
         <div
             className="
@@ -36,14 +36,7 @@ const Home = ({ query }) => {
           mt-27
         "
         >
-            {songs.map((elem) => (
-                <Card
-                    key={elem.id}
-                    name={elem.title}
-                    album={elem.user?.name}
-                    poster={elem.artwork?.["480x480"]}
-                />
-            ))}
+            
         </div>
     )
 }

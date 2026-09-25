@@ -1,54 +1,97 @@
-import React, { useEffect, useState } from 'react'
-import NowBar from './components/nowbar.jsx'
-import SearchBar from './components/searchbar.jsx'
+import React, { useState } from 'react'
+
+import NowBar from './components/Player/nowbar.jsx'
+import SearchBar from './components/Search/searchbar.jsx'
 import background from './assets/background.jpg'
-import Footer from './components/Footer.jsx'
-import PageNav from './components/pageNav.jsx'
-import Local from './pages/Local.jsx'
-import { Route, Routes } from 'react-router-dom'
+import Footer from './components/Others/Footer.jsx'
+import PageNav from './components/Navigation/pageNav.jsx'
+import Local from './pages/local.jsx'
+
+import { Route, Routes, useNavigate } from 'react-router-dom'
+
+import Search from './pages/search.jsx'
 import Home from './pages/Home.jsx'
 
 
-const App = ({ onSearch }) => {
+const App = () => {
 
-  const [query, setQuery] = useState("")
+    const navigate = useNavigate()
 
-  return (
-    <div className="relative min-h-screen w-full flex flex-col justify-between text-white overflow-y-hidden">
+    const [currentSong, setCurrentSong] = useState(null)
 
-      {/* 1. Global Background */}
-      <img
-        className="fixed inset-0 -z-10 h-full w-full object-cover blur-md pointer-events-none"
-        src={background}
-        alt="background"
-      />
+    const handleSearch = (value) => {
 
-      {/* 2. Top Search Header */}
-      <header className="fixed top-10 w-full pt-6 pb-2 z-20">
-        <SearchBar onSearch={setQuery} />
-        <nav className="w-full flex justify-center py-6">
-          <PageNav />
-        </nav>
-      </header>
-      {/* 3. Cards Grid */}
-      <Routes>
-        <Route path="/" element={<Home query={query} />} />
-        <Route path="/local" element={<Local />} />
-      </Routes>
+        if (!value?.trim()) return
 
-      {/* 4. Footer at normal document flow bottom */}
-      <Footer />
+        navigate(`/search?q=${encodeURIComponent(value.trim())}`)
+    }
+
+    return (
+        <div className="relative min-h-screen w-full flex flex-col justify-between text-white overflow-y-hidden">
+
+            {/* Global Background */}
+            <img
+                className="fixed inset-0 z-0 h-full w-full object-cover blur-md pointer-events-none"
+                src={background}
+                alt="background"
+            />
+
+            {/* Top Search Header */}
+            <header className="fixed top-10 w-full pt-6 pb-2 z-20">
+
+                <SearchBar onSearch={handleSearch} />
+
+                <nav className="w-full flex justify-center py-6">
+                    <PageNav />
+                </nav>
+
+            </header>
 
 
-      {/* 5. Fixed Playback Bar */}
-      <div className="fixed bottom-3 inset-x-0 z-50 flex justify-center pointer-events-none">
-        <div className="pointer-events-auto w-full flex justify-center">
-          <NowBar />
+            {/* Pages */}
+            <Routes>
+
+                <Route
+                    path="/"
+                    element={<Home />}
+                />
+
+                <Route
+                    path="/search"
+                    element={
+                        <Search
+                            onSongClick={setCurrentSong}
+                        />
+                    }
+                />
+
+                <Route
+                    path="/local"
+                    element={<Local />}
+                />
+
+            </Routes>
+
+
+            {/* Footer */}
+            <Footer />
+
+
+            {/* Player */}
+            <div className="fixed bottom-3 inset-x-0 z-50 flex justify-center pointer-events-none">
+
+                <div className="pointer-events-auto w-full flex justify-center">
+
+                    <NowBar
+                        song={currentSong}
+                    />
+
+                </div>
+
+            </div>
+
         </div>
-      </div>
-
-    </div>
-  )
+    )
 }
 
 export default App

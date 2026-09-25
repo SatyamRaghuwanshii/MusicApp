@@ -85,7 +85,7 @@ const Footer = () => {
 
       {/* Bottom Copyright Bar */}
       <div className="max-w-7xl mx-auto pt-6 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between text-[11px] text-white/[0.47] gap-3">
-        <p>© {new Date().getFullYear()} BeatVibe Inc. All rights reserved.</p>
+        <p>© {new Date().getFullYear()} Lodu Music Inc. All rights Unreserved.</p>
         <div className="flex items-center gap-6">
           <a href="#" className="hover:text-white transition-colors">Privacy Policy</a>
           <a href="#" className="hover:text-white transition-colors">Terms of Service</a>
