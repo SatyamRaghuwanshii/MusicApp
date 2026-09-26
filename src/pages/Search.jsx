@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import axios from 'axios'
 import Card from '../components/card/card'
 import { useSearchParams } from 'react-router-dom'
+import { searchSongs } from '../services/MusicApi'
 
 
 const Search = ({ onSongClick }) => {
@@ -19,12 +20,8 @@ const Search = ({ onSongClick }) => {
 
             try {
 
-                const response = await axios.get(
-                    `https://saavn.sumit.co/api/search/songs?query=${encodeURIComponent(searchQuery)}`
-                )
-
-                const results = response.data.data.results
-                setSongs(results)
+                const response = await searchSongs(searchQuery);
+                setSongs(response.results);
 
             } catch (error) {
 
@@ -61,9 +58,7 @@ const Search = ({ onSongClick }) => {
                 mt-27
             "
         >
-
             {songs.map((elem) => (
-
                 <Card
                     key={elem.id}
                     name={elem.name}
@@ -71,9 +66,7 @@ const Search = ({ onSongClick }) => {
                     poster={elem.image?.[2]?.url}
                     onSongClick={() => onSongClick(elem)}
                 />
-
             ))}
-
         </div>
 
     )

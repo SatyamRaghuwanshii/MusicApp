@@ -1,44 +1,120 @@
-import React, { useEffect, useState } from 'react'
-import axios from 'axios';
-import Card from '../components/card/card';
+import React, { useEffect, useState } from "react";
+import MusicCard from "../components/Home/MusicCard";
+import Section from "../components/Home/Section";
+import HeroSection from "../components/Home/HeroSection";
+import QuickPickCard from "../components/Home/QuickPickCard";
+import { getPlaylistById, trending } from "../services/MusicApi";
 
-const Home = ({ }) => {
-    const [songs, setSongs] = useState([]);
-    
-    // const searchSong = async (query) => {
-    //     if (!query?.trim()) return;
-    //     const response = await axios.get(`https://saavn.sumit.co/api/search/songs?query=${encodeURIComponent(query)}`);
-    //     const data = response.data;
-    //     setSongs(data.data.results);
-    // }
 
-    // useEffect(() => {
-    //     searchSong(query);
-    // }, [query])
+const Home = ({ onSongClick }) => {
+
+    const [trendingSongs, setTrendingSongs] = useState([]);
+
+    useEffect(() => {
+        const getTrendingSongs = async () => {
+            try {
+                // Get trending playlists
+                const response = await trending();
+
+                // Find "Now Trending"
+                const nowTrending = response?.find(
+                    item => item.title === "Now Trending"
+                );
+
+                if (!nowTrending) {
+                    console.log("Now Trending playlist not found");
+                    return;
+                }
+
+                // Get songs from playlist
+                const playlist = await getPlaylistById(nowTrending.id);
+
+                console.log("Now Trending songs:", playlist);
+
+                setTrendingSongs(playlist?.songs || []);
+
+            } catch (err) {
+                console.error("Failed to get trending songs", err);
+            }
+        };
+
+        getTrendingSongs();
+    }, []);
+
+    const quickPicks = [
+        {
+            id: "1",
+            name: "Boyfriend",
+            album: "P-POP CULTURE",
+            image: [
+                { url: "/src/assets/DhurandharPoster.jpg" },
+                { url: "/src/assets/DhurandharPoster.jpg" },
+                { url: "/src/assets/DhurandharPoster.jpg" }
+            ]
+        },
+        {
+            id: "2",
+            name: "For A Reason",
+            album: "P-POP CULTURE",
+            image: [
+                { url: "/src/assets/DhurandharPoster.jpg" },
+                { url: "/src/assets/DhurandharPoster.jpg" },
+                { url: "/src/assets/DhurandharPoster.jpg" }
+            ]
+        }
+    ];
+
+
     return (
-        <div
+        <main
             className="
-          flex-1
-          w-full
-          max-w-7xl
-          mx-auto
-          flex
-          flex-wrap
-          justify-center
-          items-center
-          gap-4
-          sm:gap-8
-          md:gap-10
-          px-3
-          sm:px-6
-          py-8
-          sm:py-12
-          mt-27
-        "
+                flex
+                flex-col
+                gap-10
+                w-full
+                max-w-7xl
+                mx-auto
+                px-3
+                sm:px-6
+                py-8
+                mt-27
+                pb-32
+            "
         >
-            
-        </div>
-    )
-}
 
-export default Home
+            <HeroSection
+                onPlay={() => {
+                    if (quickPicks.length > 0) {
+                        onSongClick?.(quickPicks[0]);
+                    }
+                }}
+            />
+
+            <Section title="Quick Picks">
+                {quickPicks.map((song) => (
+                    <QuickPickCard
+                        key={song.id}
+                        song={song}
+                        onClick={() => onSongClick?.(song)}
+                    />
+                ))}
+            </Section>
+
+
+            <Section title="Trending Now">
+                {trendingSongs.map((item) => (
+                    <MusicCard
+                        key={item.id}
+                        name={item.name}
+                        album={item.album?.name}
+                        poster={item.image?.[2]?.url}
+                        onSongClick={() => onSongClick?.(item)}
+                    />
+                ))}
+            </Section>
+
+        </main>
+    );
+};
+
+export default Home;

@@ -53,7 +53,7 @@ const App = () => {
 
                 <Route
                     path="/"
-                    element={<Home />}
+                    element={<Home onSongClick={setCurrentSong}/>}
                 />
 
                 <Route
