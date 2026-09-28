@@ -3,35 +3,21 @@ import MusicCard from "../components/Home/MusicCard";
 import Section from "../components/Home/Section";
 import HeroSection from "../components/Home/HeroSection";
 import QuickPickCard from "../components/Home/QuickPickCard";
-import { getPlaylistById, trending } from "../services/MusicApi";
+import { getSongsByArtistId, getAlbumById, getPlaylistById, getSongsById, trending } from "../services/MusicApi";
 
 
-const Home = ({ onSongClick }) => {
+const Home = ({ onSongClick, onQueue }) => {
 
-    const [trendingSongs, setTrendingSongs] = useState([]);
+    const [trendingSection, setTrendingSection] = useState([]);
+
 
     useEffect(() => {
         const getTrendingSongs = async () => {
             try {
-                // Get trending playlists
                 const response = await trending();
+                console.log("Now Trending", response);
 
-                // Find "Now Trending"
-                const nowTrending = response?.find(
-                    item => item.title === "Now Trending"
-                );
-
-                if (!nowTrending) {
-                    console.log("Now Trending playlist not found");
-                    return;
-                }
-
-                // Get songs from playlist
-                const playlist = await getPlaylistById(nowTrending.id);
-
-                console.log("Now Trending songs:", playlist);
-
-                setTrendingSongs(playlist?.songs || []);
+                setTrendingSection(response)
 
             } catch (err) {
                 console.error("Failed to get trending songs", err);
@@ -40,6 +26,99 @@ const Home = ({ onSongClick }) => {
 
         getTrendingSongs();
     }, []);
+
+    const handleTrendingClick = async (item) => {
+        try {
+            if (item.type === "song") {
+                const response = await getSongsById([item.id]);
+
+                const song = response?.[0];
+
+                const getArtistIds = (song) => {
+                    const primaryArtists = song.artists?.primary || [];
+                    const featuredArtists = song.artists?.featured || [];
+
+                    const artists = [
+                        ...primaryArtists,
+                        ...featuredArtists
+                    ];
+
+                    return [...new Set(
+                        artists.map(artist => artist.id)
+                    )];
+                };
+
+                const createRecommendedQueue = async (song) => {
+                    const artistIds = getArtistIds(song);
+
+                    if (!artistIds.length) {
+                        return [song];
+                    }
+
+                    const responses = await Promise.all(
+                        artistIds.map(id => getSongsByArtistId(id))
+                    );
+
+                    console.log("Responses:", responses);
+
+                    // Combine songs from all artists
+                    const artistSongs = responses.flatMap(response => response.songs);
+
+                    console.log("Artist songs:", artistSongs);
+
+                    // Remove currently playing song
+                    const filteredSongs = artistSongs.filter(
+                        item => item.id !== song.id
+                    );
+
+                    console.log("Filtered songs:", filteredSongs);
+
+                    // Remove duplicate songs
+                    const uniqueSongs = [
+                        ...new Map(
+                            filteredSongs.map(item => [item.id, item])
+                        ).values()
+                    ];
+
+                    console.log("Unique songs:", uniqueSongs);
+
+                    return [
+                        song,
+                        ...uniqueSongs
+                    ];
+                };
+
+                const recommendedQueue = await createRecommendedQueue(song);
+
+                if (!song) return;
+
+                onSongClick(song, recommendedQueue);
+            }
+
+            if (item.type === "playlist") {
+                const playlist = await getPlaylistById(item.id);
+
+                const songs = playlist?.songs || [];
+
+                if (!songs.length) return;
+                onQueue(songs)
+                onSongClick(songs[0], songs);
+            }
+
+            if (item.type === "album") {
+                const album = await getAlbumById(item.id);
+                console.log(album)
+                const songs = album?.songs || [];
+
+                if (!songs.length) return;
+                onQueue(songs)
+                onSongClick(songs[0], songs);
+            }
+
+        } catch (err) {
+            console.error("Failed to play trending item:", err);
+        }
+    };
 
     const quickPicks = [
         {
@@ -102,13 +181,13 @@ const Home = ({ onSongClick }) => {
 
 
             <Section title="Trending Now">
-                {trendingSongs.map((item) => (
+                {trendingSection.map((item) => (
                     <MusicCard
                         key={item.id}
-                        name={item.name}
-                        album={item.album?.name}
-                        poster={item.image?.[2]?.url}
-                        onSongClick={() => onSongClick?.(item)}
+                        name={item.title}
+                        album={item.type}
+                        poster={item.image}
+                        onSongClick={() => { handleTrendingClick(item) }}
                     />
                 ))}
             </Section>

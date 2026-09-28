@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { IoHeart } from 'react-icons/io5'
 import { BsThreeDotsVertical } from 'react-icons/bs'
 
@@ -7,6 +7,33 @@ const svgs =
 
 const PlayerProgress = ({ song, progress, audioRef, onExpand }) => {
     const [progressPreview, setProgressPreview] = useState(0)
+    const titleContainerRef = useRef(null);
+    const titleRef = useRef(null);
+
+    const [isOverflowing, setIsOverflowing] = useState(false);
+    const [scrollDistance, setScrollDistance] = useState(0);
+
+    useEffect(() => {
+        const checkOverflow = () => {
+            const container = titleContainerRef.current;
+            const title = titleRef.current;
+
+            if (!container || !title) return;
+
+            const distance = title.scrollWidth - container.clientWidth;
+
+            setIsOverflowing(distance > 0);
+            setScrollDistance(Math.max(0, distance));
+        };
+
+        checkOverflow();
+
+        window.addEventListener("resize", checkOverflow);
+
+        return () => {
+            window.removeEventListener("resize", checkOverflow);
+        };
+    }, [song?.name]);
 
     const handleSeekHover = (e) => {
         const rect = e.currentTarget.getBoundingClientRect()
@@ -32,13 +59,13 @@ const PlayerProgress = ({ song, progress, audioRef, onExpand }) => {
                 alt=""
             />
             <div
-                    className="
+                className="
                         absolute
                         inset-0
                         bg-black/50
                         pointer-events-none
                     "
-                />
+            />
 
             <div className="relative z-[1] shrink-0 h-[45px] w-[45px] rounded-[5px] overflow-hidden">
                 <img
@@ -46,13 +73,39 @@ const PlayerProgress = ({ song, progress, audioRef, onExpand }) => {
                     src={song?.image?.[0]?.url}
                     alt="Track Art"
                 />
-                
+
             </div>
 
-            <div className="relative z-[1] pl-3 flex flex-col justify-center ml-3 min-w-0 pr-14">
-                <h3 className="font-['title'] text-white/[0.80] text-xs sm:text-sm font-semibold truncate">
-                    {song?.name}
-                </h3>
+            <div
+                ref={titleContainerRef}
+                className="relative z-[1] pl-1 flex flex-col justify-center ml-2 min-w-0 pr-18 overflow-hidden"
+            >
+                <div className="w-full overflow-hidden whitespace-nowrap">
+                    <div
+                        ref={titleRef}
+                        className={`inline-flex whitespace-nowrap ${isOverflowing ? "song-marquee" : ""
+                            }`}
+                        style={{
+                            "--scroll-distance": `${scrollDistance}px`,
+                        }}
+                    >
+                        <span className="font-['title'] text-white/[0.80] text-xs sm:text-sm font-semibold">
+                            {song?.name}
+                        </span>
+
+                        {isOverflowing && (
+                            <>
+                                <span className="mx-5">
+                                   
+                                </span>
+
+                                <span className="font-['title'] text-white/[0.80] text-xs sm:text-sm font-semibold">
+                                    {song?.name}
+                                </span>
+                            </>
+                        )}
+                    </div>
+                </div>
 
                 <h6 className="font-['title'] text-white/[0.47] text-[10px] sm:text-xs truncate">
                     {song?.album?.name}

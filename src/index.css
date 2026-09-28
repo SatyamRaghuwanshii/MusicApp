@@ -1,8 +1,13 @@
 /* src/index.css */
 @import 'tailwindcss';
+
+@custom-variant dark (&:is(.dark *));
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+*{
+    scrollbar-width: none;
+}
 
 html,body {
   margin: 0;
@@ -38,5 +43,29 @@ body{
     100% {
         opacity: 1;
         transform: scale(1);
+    }
+}
+
+.song-marquee {
+    animation: song-marquee 8s linear infinite;
+}
+
+@keyframes song-marquee {
+    from {
+        transform: translateX(0);
+    }
+
+    to {
+        transform: translateX(calc(-50% - 20px));
+    }
+}
+
+@keyframes wave {
+    0%, 100% {
+        transform: scaleY(0.4);
+    }
+
+    50% {
+        transform: scaleY(1);
     }
 }

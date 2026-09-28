@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 
 import NowBar from './components/Player/nowbar.jsx'
 import SearchBar from './components/Search/searchbar.jsx'
@@ -16,8 +16,40 @@ import Home from './pages/Home.jsx'
 const App = () => {
 
     const navigate = useNavigate()
-
+    const [queue, setQueue] = useState([]);
     const [currentSong, setCurrentSong] = useState(null)
+    const [showHeader, setShowHeader] = useState(true);
+
+    const playSong = (song, newQueue = []) => {
+        setQueue(newQueue);
+        setCurrentSong(song);
+    };
+
+
+    useEffect(() => {
+        let lastScrollY = window.scrollY;
+
+        const handleScroll = () => {
+            const currentScrollY = window.scrollY;
+            if (currentScrollY < 50) {
+                setShowHeader(true);
+            }
+            else if (currentScrollY > lastScrollY + 5) {
+                setShowHeader(false);
+            }
+            else if (currentScrollY < lastScrollY - 5) {
+                setShowHeader(true);
+            }
+
+            lastScrollY = currentScrollY;
+        };
+
+        window.addEventListener("scroll", handleScroll);
+
+        return () => {
+            window.removeEventListener("scroll", handleScroll);
+        };
+    }, []);
 
     const handleSearch = (value) => {
 
@@ -37,11 +69,15 @@ const App = () => {
             />
 
             {/* Top Search Header */}
-            <header className="fixed top-10 w-full pt-6 pb-2 z-20">
+            <header className={`
+                fixed w-full pt-6 pb-2 z-20
+                transition-transform duration-300 ease-in-out
+                ${showHeader ? "translate-y-0" : "-translate-y-[180%]"}
+            `}>
 
                 <SearchBar onSearch={handleSearch} />
 
-                <nav className="w-full flex justify-center py-6">
+                <nav className="w-full flex justify-center py-14">
                     <PageNav />
                 </nav>
 
@@ -53,14 +89,14 @@ const App = () => {
 
                 <Route
                     path="/"
-                    element={<Home onSongClick={setCurrentSong}/>}
+                    element={<Home onSongClick={playSong} onQueue={setQueue} />}
                 />
 
                 <Route
                     path="/search"
                     element={
                         <Search
-                            onSongClick={setCurrentSong}
+                            onSongClick={playSong}
                         />
                     }
                 />
@@ -83,7 +119,7 @@ const App = () => {
                 <div className="pointer-events-auto w-full flex justify-center">
 
                     <NowBar
-                        song={currentSong}
+                        song={currentSong} queue={queue} currentSong={currentSong} setCurrentSong={setCurrentSong}
                     />
 
                 </div>

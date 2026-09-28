@@ -1,43 +1,61 @@
 import React, { useEffect, useState } from 'react'
-import axios from 'axios'
 import Card from '../components/card/card'
 import { useSearchParams } from 'react-router-dom'
-import { searchSongs } from '../services/MusicApi'
-
+import { getSongsById, searchSongs } from '../services/MusicApi'
+import { createRecommendedQueue } from '../services/recommendations'
 
 const Search = ({ onSongClick }) => {
-
     const [songs, setSongs] = useState([])
     const [searchParams] = useSearchParams()
 
     const searchQuery = searchParams.get("q")
 
     useEffect(() => {
-
         const searchSong = async () => {
-
             if (!searchQuery?.trim()) return
 
             try {
+                const response = await searchSongs(searchQuery)
 
-                const response = await searchSongs(searchQuery);
-                setSongs(response.results);
+                setSongs(response.results)
 
             } catch (error) {
-
                 console.error("Search failed:", error)
-
             }
-
         }
 
         searchSong()
-
     }, [searchQuery])
 
 
-    return (
+    const handleSearchSongClick = async (item) => {
+        try {
+            // Get complete song data
+            const response = await getSongsById([item.id])
 
+            const song = response?.[0]
+
+            if (!song) return
+
+            // Create recommended queue
+            const recommendedQueue =
+                await createRecommendedQueue(song)
+
+            console.log("Recommended queue:", recommendedQueue)
+
+            // Send song + queue to Player
+            onSongClick(song, recommendedQueue)
+
+        } catch (error) {
+            console.error(
+                "Failed to play search song:",
+                error
+            )
+        }
+    }
+
+
+    return (
         <div
             className="
                 flex-1
@@ -64,11 +82,12 @@ const Search = ({ onSongClick }) => {
                     name={elem.name}
                     album={elem.album?.name}
                     poster={elem.image?.[2]?.url}
-                    onSongClick={() => onSongClick(elem)}
+                    onSongClick={() =>
+                        handleSearchSongClick(elem)
+                    }
                 />
             ))}
         </div>
-
     )
 }
 

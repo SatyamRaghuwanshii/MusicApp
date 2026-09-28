@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from "react";
+
 import {
     IoChevronDown,
     IoHeart,
@@ -8,118 +9,222 @@ import {
     IoPlayForward,
     IoList,
     IoMusicalNotes,
-} from 'react-icons/io5'
-import { BsThreeDotsVertical } from 'react-icons/bs'
+} from "react-icons/io5";
+
+import { BsThreeDotsVertical } from "react-icons/bs";
+
+import Queue from "./queue";
+
 
 const ExpandedPlayer = ({
     song,
     progress,
     audioRef,
+
     isPlaying,
     setIsPlaying,
-    setIsExpanded
+
+    setIsExpanded,
+    handlePlayPause,
+    handlePrev,
+    handleNext,
+
+    queue = [],
+    onSongClick,
 }) => {
 
-    const [activeSection, setActiveSection] = useState(null)
-    const [isAnimating, setIsAnimating] = useState(false)
-    const [currentTime, setCurrentTime] = useState(0)
-    const [hoverProgress, setHoverProgress] = useState(null)
+    const [activeSection, setActiveSection] = useState(null);
 
-    const handleSeekHover = (e) => {
-        const rect = e.currentTarget.getBoundingClientRect()
+    const [isAnimating, setIsAnimating] = useState(false);
 
-        const mouseX = e.clientX - rect.left
+    const [currentTime, setCurrentTime] = useState(0);
 
-        const percentage = (mouseX / rect.width) * 100
+    const [hoverProgress, setHoverProgress] = useState(null);
 
-        setHoverProgress(Math.max(0, Math.min(100, percentage)))
-    }
+    const titleRef = useRef(null);
 
-    const handleSeekLeave = () => {
-        setHoverProgress(null)
-    }
+    const [isOverflowing, setIsOverflowing] = useState(false);
+
+    const [scrollDistance, setScrollDistance] = useState(0);
+
+
+    /*
+    ------------------------------------------------
+    CHECK SONG TITLE OVERFLOW
+    ------------------------------------------------
+    */
 
     useEffect(() => {
-        const audio = audioRef.current
-        if (!audio) return
 
-        const updateTime = () => {
-            setCurrentTime(audio.currentTime)
-        }
+        const checkOverflow = () => {
 
-        audio.addEventListener("timeupdate", updateTime)
+            const element = titleRef.current;
+
+            if (!element) return;
+
+            const distance =
+                element.scrollWidth -
+                element.clientWidth;
+
+            setIsOverflowing(distance > 0);
+
+            setScrollDistance(Math.max(0, distance));
+        };
+
+        checkOverflow();
+
+        window.addEventListener(
+            "resize",
+            checkOverflow
+        );
 
         return () => {
-            audio.removeEventListener("timeupdate", updateTime)
-        }
-    }, [audioRef])
+            window.removeEventListener(
+                "resize",
+                checkOverflow
+            );
+        };
+
+    }, [song?.name]);
+
+
+    /*
+    ------------------------------------------------
+    AUDIO CURRENT TIME
+    ------------------------------------------------
+    */
 
     useEffect(() => {
+
+        const audio = audioRef?.current;
+
+        if (!audio) return;
+
+        const updateTime = () => {
+            setCurrentTime(audio.currentTime);
+        };
+
+        audio.addEventListener(
+            "timeupdate",
+            updateTime
+        );
+
+        return () => {
+            audio.removeEventListener(
+                "timeupdate",
+                updateTime
+            );
+        };
+
+    }, [audioRef, song]);
+
+
+    /*
+    ------------------------------------------------
+    OPEN ANIMATION
+    ------------------------------------------------
+    */
+
+    useEffect(() => {
+
         requestAnimationFrame(() => {
-            setIsAnimating(true)
-        })
-    }, [])
+            setIsAnimating(true);
+        });
+
+    }, []);
+
+
+    /*
+    ------------------------------------------------
+    CLOSE PLAYER
+    ------------------------------------------------
+    */
 
     const handleClose = () => {
-        setIsAnimating(false)
+
+        setIsAnimating(false);
 
         setTimeout(() => {
-            setIsExpanded(true)
-        }, 350)
-    }
+            setIsExpanded(true);
+        }, 500);
 
-    // -------------------------
-    // PLAY / PAUSE
-    // -------------------------
+    };
 
-    const handlePlayPause = () => {
 
-        if (!audioRef.current) return
 
-        if (audioRef.current.paused) {
-            audioRef.current.play()
-            setIsPlaying(true)
-        } else {
-            audioRef.current.pause()
-            setIsPlaying(false)
-        }
-    }
 
-    // -------------------------
-    // SEEK
-    // -------------------------
+
+
+    /*
+    ------------------------------------------------
+    SEEK
+    ------------------------------------------------
+    */
 
     const handleSeek = (e) => {
 
-        if (!audioRef.current) return
+        if (!audioRef?.current) return;
 
-        const rect = e.currentTarget.getBoundingClientRect()
+        const rect =
+            e.currentTarget.getBoundingClientRect();
 
-        const clickX = e.clientX - rect.left
+        const clickX =
+            e.clientX - rect.left;
 
-        const percentage = clickX / rect.width
+        const percentage =
+            clickX / rect.width;
 
-        if (!audioRef.current.duration) return
+        if (!audioRef.current.duration) return;
 
         audioRef.current.currentTime =
-            audioRef.current.duration * percentage
-    }
+            audioRef.current.duration *
+            percentage;
 
-    // -------------------------
-    // OPEN QUEUE / LYRICS
-    // -------------------------
+    };
+
+
+    /*
+    ------------------------------------------------
+    SEEK HOVER
+    ------------------------------------------------
+    */
+
+    const handleSeekHover = (e) => {
+
+        const rect =
+            e.currentTarget.getBoundingClientRect();
+
+        const mouseX =
+            e.clientX - rect.left;
+
+        const percentage =
+            (mouseX / rect.width) * 100;
+
+        setHoverProgress(
+            Math.max(
+                0,
+                Math.min(100, percentage)
+            )
+        );
+
+    };
+
+
+    /*
+    ------------------------------------------------
+    SECTIONS
+    ------------------------------------------------
+    */
 
     const openSection = (section) => {
-        setActiveSection(section)
-    }
+        setActiveSection(section);
+    };
 
-    // -------------------------
-    // CLOSE QUEUE / LYRICS
-    // -------------------------
 
     const closeSection = () => {
-        setActiveSection(null)
-    }
+        setActiveSection(null);
+    };
+
 
     return (
 
@@ -128,25 +233,20 @@ const ExpandedPlayer = ({
                 fixed
                 inset-0
                 z-[100]
-
                 flex
                 justify-center
                 items-end
-
                 pointer-events-none
             "
         >
 
-            {/* ================================================= */}
-            {/* EXPANDED PLAYER */}
-            {/* ================================================= */}
+            {/* Main Player */}
 
             <div
                 className={`
                     relative
                     pointer-events-auto
                     overflow-hidden
-                    bottom-2
                     origin-bottom
 
                     border
@@ -155,42 +255,57 @@ const ExpandedPlayer = ({
                     bg-black/50
                     backdrop-blur-[25px]
 
+                    bottom-2
+
                     shadow-2xl
 
                     transition-all
                     duration-500
                     ease-[cubic-bezier(0.22,1,0.36,1)]
 
-                    ${isAnimating
-                        ? `
+                    ${
+                        isAnimating
+
+                            ? `
                                 w-full
                                 sm:w-full
                                 lg:w-[48%]
 
+                                bottom-[-14px]
+
                                 h-screen
                                 sm:h-screen
                                 lg:h-[85vh]
+
                                 opacity-100
-                                rounded-none
-                                sm:rounded-none
+
+                                rounded-2xl
+
+                                sm:bottom-[-14px]
+
+                                lg:bottom-2
+
+                                sm:rounded-[20px]
+
                                 lg:rounded-[30px]
                             `
-                        : `
+
+                            : `
                                 w-[45%]
                                 sm:w-[38%]
                                 lg:w-[35%]
 
                                 h-[60px]
+
                                 opacity-50
+
                                 rounded-[15px]
                             `
                     }
                 `}
             >
 
-                {/* ================================================= */}
-                {/* BACKGROUND */}
-                {/* ================================================= */}
+                {/* Background */}
 
                 <img
                     src={song?.image?.[0]?.url}
@@ -198,15 +313,11 @@ const ExpandedPlayer = ({
                     className="
                         absolute
                         inset-0
-
                         w-full
                         h-full
-
                         object-cover
-
                         scale-125
                         blur-[40px]
-
                         pointer-events-none
                     "
                 />
@@ -221,9 +332,7 @@ const ExpandedPlayer = ({
                 />
 
 
-                {/* ================================================= */}
-                {/* MAIN CONTENT */}
-                {/* ================================================= */}
+                {/* Main Content */}
 
                 <div
                     className="
@@ -247,9 +356,7 @@ const ExpandedPlayer = ({
                     "
                 >
 
-                    {/* ================================================= */}
-                    {/* TOP BAR */}
-                    {/* ================================================= */}
+                    {/* Header */}
 
                     <div
                         className="
@@ -258,7 +365,6 @@ const ExpandedPlayer = ({
                             justify-between
                             h-4
                             pt-3
-
                             shrink-0
                         "
                     >
@@ -312,18 +418,14 @@ const ExpandedPlayer = ({
                     </div>
 
 
-                    {/* ================================================= */}
-                    {/* ALBUM ART */}
-                    {/* ================================================= */}
+                    {/* Album Art */}
 
                     <div
                         className="
                             flex
                             justify-center
-
                             mt-4
                             sm:mt-6
-
                             shrink-0
                         "
                     >
@@ -355,44 +457,70 @@ const ExpandedPlayer = ({
                     </div>
 
 
-                    {/* ================================================= */}
-                    {/* SONG INFO */}
-                    {/* ================================================= */}
+                    {/* Song Info */}
 
                     <div
                         className="
                             mt-5
                             shrink-0
+                            w-full
                         "
                     >
 
-                        <h2
+                        <div
+                            ref={titleRef}
                             className="
+                                w-full
+                                overflow-hidden
+                                whitespace-nowrap
                                 text-center
-
-                                text-xl
-                                sm:text-2xl
-
-                                font-semibold
-
-                                text-white
-
-                                truncate
                             "
                         >
-                            {song?.name}
-                        </h2>
+
+                            <div
+                                className={`
+                                    inline-flex
+                                    whitespace-nowrap
+
+                                    text-xl
+                                    sm:text-2xl
+
+                                    font-semibold
+                                    text-white
+
+                                    ${
+                                        isOverflowing
+                                            ? "song-marquee"
+                                            : ""
+                                    }
+                                `}
+                                style={{
+                                    "--scroll-distance":
+                                        `${scrollDistance}px`,
+                                }}
+                            >
+
+                                <span>
+                                    {song?.name}
+                                </span>
+
+                                {isOverflowing && (
+                                    <span className="ml-12">
+                                        {song?.name}
+                                    </span>
+                                )}
+
+                            </div>
+
+                        </div>
+
 
                         <p
                             className="
                                 text-center
-
                                 text-sm
-
                                 text-white/50
-
                                 mt-1
-
                                 truncate
                             "
                         >
@@ -402,18 +530,14 @@ const ExpandedPlayer = ({
                     </div>
 
 
-                    {/* ================================================= */}
-                    {/* LIKE */}
-                    {/* ================================================= */}
+                    {/* Now Playing */}
 
                     <div
                         className="
                             flex
                             justify-between
                             items-center
-
                             mt-4
-
                             shrink-0
                         "
                     >
@@ -421,13 +545,9 @@ const ExpandedPlayer = ({
                         <IoHeart
                             className="
                                 text-2xl
-
                                 text-white/50
-
                                 cursor-pointer
-
                                 hover:text-white
-
                                 transition-colors
                             "
                         />
@@ -444,16 +564,16 @@ const ExpandedPlayer = ({
                     </div>
 
 
-                    {/* ================================================= */}
-                    {/* PROGRESS */}
-                    {/* ================================================= */}
+                    {/* Progress */}
 
                     <div className="mt-5 shrink-0">
 
                         <div
                             onClick={handleSeek}
                             onMouseMove={handleSeekHover}
-                            onMouseLeave={handleSeekLeave}
+                            onMouseLeave={() =>
+                                setHoverProgress(null)
+                            }
                             className="
                                 relative
                                 w-full
@@ -466,37 +586,38 @@ const ExpandedPlayer = ({
 
                             <div
                                 style={{
-                                    width: `${progress || 0}%`
+                                    width:
+                                        `${progress || 0}%`,
                                 }}
                                 className="
                                     h-full
-
                                     rounded-full
-
                                     bg-white
                                 "
                             />
+
                             {hoverProgress !== null && (
+
                                 <div
                                     style={{
-                                        width: `${hoverProgress}%`
+                                        width:
+                                            `${hoverProgress}%`,
                                     }}
                                     className="
-                                    absolute
-                                    left-0
-                                    top-0
-                                    h-full
-                                    rounded-full
-                                    bg-white/40
-                                    pointer-events-none
-                                    
-                                "
+                                        absolute
+                                        left-0
+                                        top-0
+                                        h-full
+                                        rounded-full
+                                        bg-white/40
+                                        pointer-events-none
+                                    "
                                 />
+
                             )}
 
                         </div>
 
-                        {/* TIME */}
 
                         <div
                             className="
@@ -513,18 +634,31 @@ const ExpandedPlayer = ({
                         >
 
                             <span>
-                                {`${Math.floor(currentTime / 60)}:${String(
-                                    Math.floor(currentTime % 60)
+                                {`${Math.floor(
+                                    currentTime / 60
+                                )}:${String(
+                                    Math.floor(
+                                        currentTime % 60
+                                    )
                                 ).padStart(2, "0")}`}
                             </span>
 
+
                             <span>
-                                {audioRef.current?.duration
-                                    ? `${Math.floor(audioRef.current.duration / 60)}:${String(
-                                        Math.floor(audioRef.current.duration % 60)
-                                    ).padStart(2, '0')}`
+
+                                {audioRef?.current?.duration
+
+                                    ? `${Math.floor(
+                                        audioRef.current.duration / 60
+                                    )}:${String(
+                                        Math.floor(
+                                            audioRef.current.duration % 60
+                                        )
+                                    ).padStart(2, "0")}`
+
                                     : "0:00"
                                 }
+
                             </span>
 
                         </div>
@@ -532,9 +666,7 @@ const ExpandedPlayer = ({
                     </div>
 
 
-                    {/* ================================================= */}
-                    {/* CONTROLS */}
-                    {/* ================================================= */}
+                    {/* Main Controls */}
 
                     <div
                         className="
@@ -547,18 +679,17 @@ const ExpandedPlayer = ({
                             mt-6
 
                             shrink-0
+                            
                         "
                     >
 
                         <IoPlayBack
+                            onClick={handlePrev}
                             className="
                                 text-2xl
                                 text-white/60
-
                                 cursor-pointer
-
                                 hover:text-white
-
                                 transition-colors
                             "
                         />
@@ -577,7 +708,6 @@ const ExpandedPlayer = ({
                                 rounded-full
 
                                 bg-white
-
                                 text-black
 
                                 hover:scale-105
@@ -587,23 +717,30 @@ const ExpandedPlayer = ({
                         >
 
                             {isPlaying ? (
+
                                 <IoPause className="text-2xl" />
+
                             ) : (
-                                <IoPlay className="text-2xl ml-1" />
+
+                                <IoPlay
+                                    className="
+                                        text-2xl
+                                        ml-1
+                                    "
+                                />
+
                             )}
 
                         </button>
 
 
                         <IoPlayForward
+                            onClick={handleNext}
                             className="
                                 text-2xl
                                 text-white/60
-
                                 cursor-pointer
-
                                 hover:text-white
-
                                 transition-colors
                             "
                         />
@@ -611,29 +748,25 @@ const ExpandedPlayer = ({
                     </div>
 
 
-                    {/* ================================================= */}
-                    {/* QUEUE / LYRICS ICONS */}
-                    {/* ================================================= */}
+                    {/* Queue / Lyrics */}
 
                     <div
                         className="
                             flex
                             items-center
                             justify-center
-
                             gap-10
-
                             mt-auto
                             pb-2
-
                             shrink-0
+                            
                         "
                     >
 
-                        {/* QUEUE */}
-
                         <button
-                            onClick={() => openSection("queue")}
+                            onClick={() =>
+                                openSection("queue")
+                            }
                             className="
                                 flex
                                 items-center
@@ -658,10 +791,10 @@ const ExpandedPlayer = ({
                         </button>
 
 
-                        {/* LYRICS */}
-
                         <button
-                            onClick={() => openSection("lyrics")}
+                            onClick={() =>
+                                openSection("lyrics")
+                            }
                             className="
                                 flex
                                 items-center
@@ -690,26 +823,27 @@ const ExpandedPlayer = ({
                 </div>
 
 
-                {/* ================================================= */}
-                {/* QUEUE / LYRICS SLIDE SECTION */}
-                {/* ================================================= */}
+                {/* ---------------------------------
+                    QUEUE / LYRICS PANEL
+                --------------------------------- */}
 
                 <div
                     className={`
                         absolute
                         inset-0
                         z-30
-
-                        bg-black/80
+                        bg-black/60
+                        
                         backdrop-blur-[30px]
 
                         transition-transform
                         duration-300
                         ease-out
 
-                        ${activeSection
-                            ? "translate-x-0"
-                            : "translate-x-full"
+                        ${
+                            activeSection
+                                ? "translate-x-0"
+                                : "translate-x-full"
                         }
                     `}
                 >
@@ -729,130 +863,121 @@ const ExpandedPlayer = ({
                         "
                     >
 
-                        {/* ================================================= */}
-                        {/* SECTION HEADER */}
-                        {/* ================================================= */}
+                        {activeSection === "queue" && (
 
-                        <div
-                            className="
-                                flex
-                                items-center
-                                justify-between
+                            <Queue
+                                queue={queue}
+                                currentSong={song}
+                                onSongClick={onSongClick}
+                                onClose={closeSection}
+                            />
 
-                                shrink-0
-                            "
-                        >
+                        )}
 
-                            <button
-                                onClick={closeSection}
+
+                        {activeSection === "lyrics" && (
+
+                            <div
                                 className="
                                     flex
-                                    items-center
-                                    justify-center
-
-                                    w-10
-                                    h-10
-
-                                    rounded-full
-                                    rotate-90
-                                    text-white/60
-
-                                    hover:text-white
-                                    hover:bg-white/10
-
-                                    transition-all
+                                    flex-col
+                                    h-full
                                 "
                             >
-                                <IoChevronDown className="text-2xl" />
-                            </button>
-
-
-                            <h2
-                                className="
-                                    text-lg
-                                    font-semibold
-                                    text-white
-                                "
-                            >
-                                {activeSection === "queue"
-                                    ? "Queue"
-                                    : "Lyrics"
-                                }
-                            </h2>
-
-
-                            <div className="w-10" />
-
-                        </div>
-
-
-                        {/* ================================================= */}
-                        {/* SECTION CONTENT */}
-                        {/* ================================================= */}
-
-                        <div
-                            className="
-                                flex-1
-
-                                flex
-                                items-center
-                                justify-center
-
-                                min-h-0
-
-                                text-white/40
-                            "
-                        >
-
-                            {activeSection === "queue" && (
 
                                 <div
                                     className="
                                         flex
-                                        flex-col
                                         items-center
-                                        gap-3
+                                        justify-between
                                     "
                                 >
 
-                                    <IoList className="text-5xl text-white/20" />
-
-                                    <p className="text-sm">
-                                        Your queue is empty
-                                    </p>
-
-                                </div>
-
-                            )}
-
-
-                            {activeSection === "lyrics" && (
-
-                                <div
-                                    className="
-                                        flex
-                                        flex-col
-                                        items-center
-                                        gap-3
-                                    "
-                                >
-
-                                    <IoMusicalNotes
+                                    <button
+                                        onClick={closeSection}
                                         className="
-                                            text-5xl
-                                            text-white/20
-                                        "
-                                    />
+                                            flex
+                                            items-center
+                                            justify-center
 
-                                    <p className="text-sm">
-                                        Lyrics will appear here
-                                    </p>
+                                            w-10
+                                            h-10
+
+                                            rounded-full
+
+                                            rotate-90
+
+                                            text-white/60
+
+                                            hover:text-white
+                                            hover:bg-white/10
+
+                                            transition-all
+                                        "
+                                    >
+
+                                        <IoChevronDown
+                                            className="text-2xl"
+                                        />
+
+                                    </button>
+
+
+                                    <h2
+                                        className="
+                                            text-lg
+                                            font-semibold
+                                            text-white
+                                        "
+                                    >
+                                        Lyrics
+                                    </h2>
+
+
+                                    <div className="w-10" />
 
                                 </div>
 
-                            )}
 
-                        </div>
+                                <div
+                                    className="
+                                        flex-1
+
+                                        flex
+                                        items-center
+                                        justify-center
+
+                                        text-white/40
+                                    "
+                                >
+
+                                    <div
+                                        className="
+                                            flex
+                                            flex-col
+                                            items-center
+                                            gap-3
+                                        "
+                                    >
+
+                                        <IoMusicalNotes
+                                            className="
+                                                text-5xl
+                                                text-white/20
+                                            "
+                                        />
+
+                                        <p className="text-sm">
+                                            Lyrics will appear here
+                                        </p>
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                        )}
 
                     </div>
 
@@ -861,7 +986,7 @@ const ExpandedPlayer = ({
             </div>
 
         </div>
-    )
-}
+    );
+};
 
-export default ExpandedPlayer
+export default ExpandedPlayer;

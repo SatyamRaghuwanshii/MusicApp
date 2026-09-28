@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API = "http://localhost:3000/api";
+const API = "https://jiosaavn-api-1-m787.onrender.com/api";
 
 export const searchAll = async (query) => {
     const response = await axios.get(`${API}/search`, {
@@ -10,7 +10,7 @@ export const searchAll = async (query) => {
     return response.data.data;
 };
 
-export const getSongsByID = async (id) => {
+export const getSongsById = async (id) => {
     const response = await axios.get(`${API}/songs`, {
         params: {
             ids: id.join(",")
@@ -23,6 +23,17 @@ export const getSongsByID = async (id) => {
 
 export const getPlaylistById = async (id, limit = 50) => {
     const response = await axios.get(`${API}/playlists`, {
+        params: {
+            id,
+            limit
+        }
+    });
+
+    return response.data.data;
+};
+
+export const getAlbumById = async (id, limit = 50) => {
+    const response = await axios.get(`${API}/albums`, {
         params: {
             id,
             limit
@@ -68,15 +79,14 @@ export const searchAlbums = async (query, page = 0, limit = 20) => {
     return response.data.data;
 };
 
-export const searchArtists = async (query, page = 0, limit = 20) => {
-    const response = await axios.get(`${API}/search/artists`, {
+export const getSongsByArtistId = async (artistId, page = 0, limit = 20) => {
+    const response = await axios.get(`${API}/artists/${artistId}/songs`, {
         params: {
-            query,
             page,
             limit
         }
     });
-
+    console.log("Artist API response:", response.data);
     return response.data.data;
 };
 
