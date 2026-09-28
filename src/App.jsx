@@ -5,12 +5,12 @@ import SearchBar from './components/Search/searchbar.jsx'
 import background from './assets/background.jpg'
 import Footer from './components/Others/Footer.jsx'
 import PageNav from './components/Navigation/pageNav.jsx'
-import Local from './pages/local.jsx'
 
 import { Route, Routes, useNavigate } from 'react-router-dom'
 
-import Search from "./pages/Search.jsx";
-import Home from './pages/Home.jsx'
+import Local from './pages/local.jsx'
+import Search from './pages/search.jsx'
+import Home from './pages/home.jsx'
 
 
 const App = () => {
