@@ -9,7 +9,7 @@ import Local from './pages/local.jsx'
 
 import { Route, Routes, useNavigate } from 'react-router-dom'
 
-import Search from './pages/search.jsx'
+import Search from "./pages/Search.jsx";
 import Home from './pages/Home.jsx'
 
 
