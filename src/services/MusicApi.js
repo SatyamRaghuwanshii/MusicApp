@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API = "https://jiosaavn-api-1-m787.onrender.com/api";
+const API = import.meta.env.VITE_API_URL;
 
 export const searchAll = async (query) => {
     const response = await axios.get(`${API}/search`, {
