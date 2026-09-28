@@ -13,7 +13,7 @@ import {
 
 import { BsThreeDotsVertical } from "react-icons/bs";
 
-import Queue from "./queue";
+import Queue from "./Queue";
 
 
 const ExpandedPlayer = ({
